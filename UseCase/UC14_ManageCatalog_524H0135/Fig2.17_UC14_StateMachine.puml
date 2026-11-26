@@ -1,0 +1,18 @@
+@startuml
+title Fig 2.17: UC #14 State Machine Diagram - MenuItem Lifecycle
+footer Author: Nguyen Phan Anh Tuan (524H0135)
+
+[*] --> Draft : startCreateItem()
+Draft --> ActiveAvailable : saveItem() [VI & EN valid & price > 0]
+
+state ActiveAvailable {
+  [*] --> InStockAtHub
+  InStockAtHub --> OutOfStockAtHub : kitchenToggleOff() [UC9]
+  OutOfStockAtHub --> InStockAtHub : kitchenToggleOn() [UC9]
+}
+
+ActiveAvailable --> ActiveAvailable : updateDetails() [valid]
+ActiveAvailable --> Archived : adminArchive() / disableAllHubAvailability()
+Archived --> ActiveAvailable : adminRestore() [optional]
+Archived --> [*]
+@enduml

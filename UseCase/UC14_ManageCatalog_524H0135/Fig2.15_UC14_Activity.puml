@@ -1,0 +1,33 @@
+@startuml
+title Fig 2.15: UC #14 Activity Diagram - Manage Brands and Menu Items
+footer Author: Nguyen Phan Anh Tuan (524H0135)
+
+|Office Staff / Admin|
+start
+:Open Catalog Management screen;
+
+|OFDH System|
+:Verify Admin RBAC & load Brands and Menu Items;
+
+|Office Staff / Admin|
+if (Select Action?) then (Create / Update)
+  :Enter bilingual details (VI & EN), price, category, hubs;
+  :Click Save;
+  |OFDH System|
+  if (VI & EN names present AND price > 0?) then (Yes)
+    :Persist VirtualBrand / MenuItem;
+    :Sync HubMenuAvailability for selected hubs;
+    :Show success confirmation;
+  else (No)
+    :Highlight validation errors;
+  endif
+else (Archive / Soft Delete)
+  :Click Archive & confirm dialog;
+  |OFDH System|
+  :Set isArchived = true on Brand/MenuItem;
+  :Set HubMenuAvailability.isAvailable = false;
+  :Preserve historical OrderLineItem records;
+  :Show archive confirmation;
+endif
+stop
+@enduml

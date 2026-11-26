@@ -1,0 +1,22 @@
+@startuml
+title Fig 2.16: UC #14 System Sequence Diagram (SSD) - Manage Brands and Menu Items
+footer Author: Nguyen Phan Anh Tuan (524H0135)
+autonumber
+
+actor "Office Staff / Admin" as Admin
+participant ":OFDH System" as Sys
+
+Admin -> Sys : openCatalogDashboard()
+Sys --> Admin : catalogList(brands, menuItems, hubs)
+
+alt Create Menu Item / Brand
+  Admin -> Sys : createCatalogEntity(nameVi, nameEn, descVi, descEn, price, hubIds)
+  Sys --> Admin : creationConfirmation(entityId)
+else Update Menu Item / Brand
+  Admin -> Sys : updateCatalogEntity(entityId, updatedFields)
+  Sys --> Admin : updateConfirmation(entityId)
+else Archive (Soft Delete)
+  Admin -> Sys : archiveCatalogEntity(entityId)
+  Sys --> Admin : archiveConfirmation(entityId, hiddenFromMenu=true)
+end
+@enduml
