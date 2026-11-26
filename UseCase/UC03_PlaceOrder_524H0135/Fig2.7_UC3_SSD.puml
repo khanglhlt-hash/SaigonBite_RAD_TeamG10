@@ -1,0 +1,29 @@
+@startuml
+title Fig 2.7: UC #3 System Sequence Diagram (SSD) - Place an Order
+footer Author: Nguyen Phan Anh Tuan (524H0135)
+autonumber
+
+actor Customer
+participant ":OFDH System" as Sys
+participant ":Payment Gateway" as GW
+
+Customer -> Sys : initiateCheckout(addressId, hubId, cartItems)
+Sys --> Customer : checkoutSummary(distance, deliveryFee, hubStatus, quietHubOffer)
+
+opt Hub is busy and Customer accepts Quiet Hub
+  Customer -> Sys : acceptQuietHub(suggestedHubId)
+  Sys --> Customer : updatedSummary(newHubId, quietDiscount5Pct, newTotal)
+end
+
+opt Apply at most 1 Voucher
+  Customer -> Sys : applyVoucher(voucherCode)
+  Sys --> Customer : voucherResult(discountAmount, updatedTotal)
+end
+
+Customer -> Sys : confirmAndPay(paymentMethod, paymentDetails)
+alt Online Payment (Domestic E-Wallet / Int'l Card)
+  Sys -> GW : authorizePayment(amount, paymentDetails)
+  GW --> Sys : authorizationResult(status, transactionRef)
+end
+Sys --> Customer : orderConfirmation(orderId, status="Placed", receipt)
+@enduml

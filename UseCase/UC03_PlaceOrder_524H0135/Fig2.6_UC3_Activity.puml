@@ -1,0 +1,64 @@
+@startuml
+title Fig 2.6: UC #3 Activity Diagram - Place an Order
+footer Author: Nguyen Phan Anh Tuan (524H0135)
+
+|Customer|
+start
+:Select Delivery Address & click Checkout;
+
+|OFDH System|
+:Calculate distance from Hub to Address;
+if (distance <= 7.0 km?) then (No)
+  :Show "Out of delivery range" error;
+  stop
+else (Yes)
+endif
+
+:Check Hub active orders (Placed/Confirmed/Preparing);
+if (activeOrders >= 25?) then (Yes - Busy)
+  :Block selected Hub & find nearby Hub < 50% load;
+  |Customer|
+  if (Switch to suggested Quiet Hub for 5% discount?) then (Yes)
+    |OFDH System|
+    :Assign Quiet Hub & apply 5% incentive;
+  else (No)
+    :Abort checkout;
+    stop
+  endif
+else (No - Available)
+  :Keep selected Hub;
+endif
+
+:Compute distance fee (15k + 5k/km rounded 0.5 km);
+|Customer|
+if (Enter promotional Voucher?) then (Yes)
+  |OFDH System|
+  if (Valid & max 1 voucher?) then (Yes)
+    :Apply voucher discount (<= food subtotal);
+  else (No)
+    :Display voucher error message;
+  endif
+endif
+
+|Customer|
+:Select Payment Method & click Confirm Order;
+|OFDH System|
+if (Tourist & COD > 500,000 VND?) then (Yes)
+  :Block COD & request Int'l Card;
+  stop
+else (No)
+endif
+
+if (Online Payment?) then (Yes)
+  :Authorize via Payment Gateway;
+  if (Authorized?) then (No)
+    :Notify payment failed;
+    stop
+  endif
+endif
+
+:Atomically save Order [Placed], LineItems, Payment;
+:Increment Hub activeOrders & Voucher usedCount;
+:Notify Hub Kitchen & show digital receipt;
+stop
+@enduml

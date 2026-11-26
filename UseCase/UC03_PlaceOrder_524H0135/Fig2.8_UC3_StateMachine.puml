@@ -1,0 +1,28 @@
+@startuml
+title Fig 2.8: UC #3 State Machine Diagram - Order Lifecycle (Placement Focus)
+footer Author: Nguyen Phan Anh Tuan (524H0135)
+
+[*] --> DraftCart : addItemsToCart()
+DraftCart --> ValidatingCheckout : initiateCheckout()
+ValidatingCheckout --> DraftCart : outOfRadius / hubBusyDeclined / paymentFailed
+ValidatingCheckout --> Placed : confirmAndPay() [hub < 25 & stock OK & payment OK]
+
+Placed --> Cancelled : customerCancel() [before kitchen confirms]
+Placed --> Rejected : kitchenReject() [stock-out]
+Placed --> Confirmed : kitchenAccept()
+
+Confirmed --> Preparing : startCooking()
+Preparing --> ReadyForPickup : markReady()
+ReadyForPickup --> OutForDelivery : shipperPickup()
+OutForDelivery --> Delivered : confirmDelivery()
+OutForDelivery --> DeliveryFailed : reportFailure()
+
+Delivered --> Refunded : approveRefund() [within 24h]
+DeliveryFailed --> Refunded : approveRefund() [if prepaid]
+
+Cancelled --> [*]
+Rejected --> [*]
+Delivered --> [*]
+DeliveryFailed --> [*]
+Refunded --> [*]
+@enduml
