@@ -1,0 +1,62 @@
+@startuml
+title Fig 2.1: SaigonBite OFDH Overall Use Case Diagram
+footer Author: Nguyen Phan Anh Tuan (524H0135)
+left to right direction
+
+actor "Customer" as Cust
+actor "Local Customer" as Local
+actor "Foreign Tourist" as Tourist
+actor "Hub Kitchen Staff" as Kitchen
+actor "Shipper" as Shipper
+actor "Office Staff / Admin" as Admin
+actor "Manager" as Manager
+actor "Payment Gateway" as PayGW <<system>>
+
+Cust <|-- Local
+Cust <|-- Tourist
+
+rectangle "SaigonBite OFDH System" {
+  usecase "UC1: Register Customer & Manage Addresses\n[524H0017]" as UC1
+  usecase "UC2: Browse Brands & Hub Menus" as UC2
+  usecase "UC3: Place an Order\n[524H0135]" as UC3
+  usecase "UC4: Track Order Status" as UC4
+  usecase "UC5: Cancel Unconfirmed Order" as UC5
+  usecase "UC6: Process Payment" as UC6
+  usecase "UC7: View & Confirm/Reject Incoming Orders" as UC7
+  usecase "UC8: Prepare Order & Mark Ready\n[524H0017]" as UC8
+  usecase "UC9: Toggle Out-of-Stock Item" as UC9
+  usecase "UC10: Deliver Order & Reconcile COD\n[524H0114]" as UC10
+  usecase "UC11: Rate & Review Order" as UC11
+  usecase "UC12: Submit Complaint & Process Refund" as UC12
+  usecase "UC13: Configure Hubs & Shippers" as UC13
+  usecase "UC14: Manage Brands & Menu Items\n[524H0135]" as UC14
+  usecase "UC15: Manage Promotional Vouchers" as UC15
+  usecase "UC16: Produce Management Reports\n[524H0114]" as UC16
+}
+
+Cust --> UC1
+Cust --> UC2
+Cust --> UC3
+Cust --> UC4
+Cust --> UC5
+Cust --> UC11
+Cust --> UC12
+
+UC3 ..> UC6 : <<include>>
+UC6 --> PayGW
+
+Kitchen --> UC7
+Kitchen --> UC8
+UC9 ..> UC8 : <<extend>>
+
+Shipper --> UC10
+
+Admin --> UC13
+Admin --> UC14
+Admin --> UC15
+Admin --> UC12
+
+Manager --> UC12
+Manager --> UC16
+Manager --> UC10 : <<verify COD>>
+@enduml

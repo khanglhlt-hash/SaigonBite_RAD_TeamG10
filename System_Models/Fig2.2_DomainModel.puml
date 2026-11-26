@@ -1,0 +1,181 @@
+@startuml
+title Fig 2.2: SaigonBite OFDH Domain Model Class Diagram
+footer Author: Nguyen Phan Anh Tuan (524H0135)
+skinparam classAttributeIconSize 0
+
+abstract class Customer {
+  customerId : String
+  fullName : String
+  preferredLang : String
+  status : String
+  createdAt : DateTime
+}
+
+class LocalCustomer {
+  phoneNumber : String
+  otpVerified : Boolean
+}
+
+class ForeignTourist {
+  passportNumber : String
+  email : String
+  nationality : String
+}
+
+class DeliveryAddress {
+  addressId : String
+  streetAddress : String
+  district : String
+  latitude : Decimal
+  longitude : Decimal
+  hotelName : String
+  roomOrLobbyNote : String
+  isDefault : Boolean
+  isArchived : Boolean
+}
+
+class CloudKitchenHub {
+  hubId : String
+  hubName : String
+  district : String
+  latitude : Decimal
+  longitude : Decimal
+  maxActiveOrders : int
+  currentActiveOrders : int
+  maxDeliveryRadiusKm : Decimal
+  isActive : Boolean
+}
+
+class VirtualBrand {
+  brandId : String
+  nameVi : String
+  nameEn : String
+  descriptionVi : String
+  descriptionEn : String
+  isArchived : Boolean
+}
+
+class MenuItem {
+  itemId : String
+  nameVi : String
+  nameEn : String
+  descriptionVi : String
+  descriptionEn : String
+  unitPrice : Decimal
+  category : String
+  isArchived : Boolean
+}
+
+class HubMenuAvailability {
+  isAvailable : Boolean
+  dailyStockQty : int
+  updatedAt : DateTime
+}
+
+class Order {
+  orderId : String
+  orderStatus : OrderStatus
+  foodSubtotal : Decimal
+  deliveryFee : Decimal
+  quietHubDiscount : Decimal
+  voucherDiscount : Decimal
+  totalAmount : Decimal
+  paymentMethod : String
+  createdAt : DateTime
+}
+
+class OrderLineItem {
+  lineId : String
+  quantity : int
+  unitPrice : Decimal
+  lineSubtotal : Decimal
+  specialNote : String
+}
+
+class Voucher {
+  voucherCode : String
+  discountType : String
+  discountValue : Decimal
+  minOrderValue : Decimal
+  validFrom : DateTime
+  validTo : DateTime
+  maxUsage : int
+  usedCount : int
+  isActive : Boolean
+}
+
+class PaymentTransaction {
+  transactionId : String
+  paymentMethod : String
+  gatewayName : String
+  amount : Decimal
+  paymentStatus : String
+  paidAt : DateTime
+}
+
+class Shipper {
+  shipperId : String
+  fullName : String
+  phone : String
+  status : String
+  currentCodHolding : Decimal
+}
+
+class DeliveryTask {
+  taskId : String
+  pickupTime : DateTime
+  deliveredTime : DateTime
+  codCollected : Decimal
+  failureReason : String
+  proofPhotoUrl : String
+  taskStatus : String
+}
+
+class CODSettlement {
+  settlementId : String
+  shiftDate : Date
+  expectedCash : Decimal
+  handedOverCash : Decimal
+  discrepancyAmount : Decimal
+  settlementStatus : String
+}
+
+class OrderReview {
+  reviewId : String
+  foodRating : int
+  deliveryRating : int
+  comment : String
+  createdAt : DateTime
+}
+
+class ComplaintRefund {
+  complaintId : String
+  reason : String
+  photoUrl : String
+  refundAmount : Decimal
+  refundStatus : String
+  createdAt : DateTime
+}
+
+Customer <|-- LocalCustomer
+Customer <|-- ForeignTourist
+Customer "1" *-- "1..*" DeliveryAddress : owns
+Customer "1" -- "0..*" Order : places
+DeliveryAddress "1" -- "0..*" Order : delivers to
+CloudKitchenHub "1" -- "0..*" Order : fulfils
+
+VirtualBrand "1" o-- "1..*" MenuItem : offers
+CloudKitchenHub "1..*" -- "1..*" MenuItem : serves
+(CloudKitchenHub, MenuItem) .. HubMenuAvailability
+
+Order "1" *-- "1..*" OrderLineItem : contains
+MenuItem "1" -- "0..*" OrderLineItem : ordered in
+Voucher "0..1" -- "0..*" Order : applied to
+Order "1" -- "1..*" PaymentTransaction : paid by
+Order "1" -- "0..1" DeliveryTask : assigned to
+Shipper "1" -- "0..*" DeliveryTask : executes
+Shipper "1" -- "0..*" CODSettlement : reconciles
+CloudKitchenHub "1" -- "0..*" CODSettlement : settles at
+Order "1" -- "0..1" OrderReview : receives
+Order "1" -- "0..1" ComplaintRefund : raises
+@enduml

@@ -1,0 +1,67 @@
+@startuml
+title Fig 1.4: SaigonBite OFDH End-to-End Business Process (Swim-lane Activity Diagram)
+footer Author: Nguyen Phan Anh Tuan (524H0135)
+
+|Customer (Local / Tourist)|
+start
+:Log in & select Delivery Address or Hotel (UC1);
+:Browse Virtual Brands & in-stock Hub Menu within 7.0 km (UC2);
+:Add dishes to cart & request Checkout (UC3);
+
+|OFDH System|
+:Check selected Hub active orders (Placed/Confirmed/Preparing);
+if (activeOrders >= 25? [Busy-Kitchen Rule]) then (Yes)
+  :Block overloaded Hub & find nearby Hub < 50% load;
+  |Customer (Local / Tourist)|
+  if (Accept nearby Hub with 5% Quiet-Kitchen discount?) then (Yes)
+    |OFDH System|
+    :Re-route order to suggested Hub & apply 5% discount;
+  else (No)
+    :Cancel checkout;
+    stop
+  endif
+else (No)
+  :Assign order to selected Hub;
+endif
+
+:Calculate distance fee (<= 7.0 km) & validate max 1 Voucher;
+|Customer (Local / Tourist)|
+:Select Payment Method (COD / Domestic E-Wallet / Int'l Card);
+|OFDH System|
+:Validate payment (Tourist COD <= 500,000 VND);
+:Create Order [Placed] & send digital ticket to Hub;
+
+|Hub Kitchen Staff|
+:Receive incoming order ticket (UC7);
+if (Ingredients available & Kitchen accepts?) then (Yes)
+  :Confirm [Confirmed] -> Cook [Preparing] -> Mark [ReadyForPickup] (UC8);
+else (No - Stock-out)
+  :Toggle item Out-of-Stock (UC9) & Reject order [Rejected];
+  |OFDH System|
+  :Trigger refund if pre-paid & notify Customer;
+  stop
+endif
+
+|Shipper|
+:Accept DeliveryTask & pick up order -> [OutForDelivery] (UC10);
+if (Delivery successful?) then (Yes)
+  :Hand over meal & collect COD cash (if COD);
+  :Mark [Delivered] & issue digital receipt;
+  :Reconcile & hand over COD cash at shift end (UC10);
+else (No)
+  :Log [DeliveryFailed] with mandatory reason & photo proof;
+endif
+
+|Customer (Local / Tourist)|
+if (Satisfied with order?) then (Yes)
+  :Submit Order Rating & Review within 24h (UC11);
+else (No - Late/Wrong item)
+  :Submit Complaint & Refund Request within 24h (UC12);
+  |Manager / Office Staff|
+  :Review evidence & approve/reject Refund -> [Refunded] (UC12);
+endif
+
+|Manager / Office Staff|
+:Generate Sales, Hub Workload & Delivery Performance Reports (UC16);
+stop
+@enduml

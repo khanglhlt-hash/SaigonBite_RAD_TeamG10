@@ -1,0 +1,119 @@
+@startuml
+title Fig 3.13: SaigonBite OFDH Final Three-Layer Design Class Diagram
+footer Author: Nguyen Phan Anh Tuan (524H0135)
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+
+package "View Layer (Boundary)" {
+  class RegistrationAddressView
+  class OrderPlacementView
+  class KitchenOrderView
+  class ShipperDeliveryView
+  class CatalogManagementView
+  class ManagementReportView
+}
+
+package "Controller Layer (Control)" {
+  class CustomerController {
+    +registerLocal(phone, name, otp)
+    +registerTourist(passport, email, name)
+    +saveAddress(custId, addrDto)
+    +archiveAddress(addrId)
+  }
+  class OrderController {
+    +evaluateHubAndPricing(hubId, addrId, items, voucherCode)
+    +findNearbyQuietHub(addrId)
+    +placeOrder(orderDto)
+  }
+  class KitchenController {
+    +getIncomingOrders(hubId)
+    +acceptOrder(orderId)
+    +markReadyForPickup(orderId)
+    +toggleOutOfStock(hubId, itemId, isAvailable)
+  }
+  class DeliveryController {
+    +acceptReadyOrder(shipperId, orderId)
+    +confirmDelivery(taskId, codCollected)
+    +reportFailure(taskId, reason, photoUrl)
+    +settleShiftCOD(shipperId, handedCash)
+  }
+  class CatalogController {
+    +createBrand(brandDto)
+    +createMenuItem(itemDto)
+    +updateMenuItem(itemId, itemDto)
+    +archiveBrandOrItem(entityType, id)
+  }
+  class ReportController {
+    +generateSalesReport(fromDate, toDate, hubId)
+    +generateHubWorkloadReport(fromDate, toDate)
+    +generateDeliveryReport(fromDate, toDate)
+    +exportReport(reportData, format)
+  }
+}
+
+package "Domain Layer (Entity)" {
+  abstract class Customer
+  class LocalCustomer
+  class ForeignTourist
+  class DeliveryAddress
+  class CloudKitchenHub
+  class VirtualBrand
+  class MenuItem
+  class HubMenuAvailability
+  class Order
+  class OrderLineItem
+  class Voucher
+  class PaymentTransaction
+  class Shipper
+  class DeliveryTask
+  class CODSettlement
+}
+
+package "Data Access Layer (DA)" {
+  class CustomerDA
+  class OrderDA
+  class KitchenDA
+  class DeliveryDA
+  class CatalogDA
+  class ReportDA
+}
+
+RegistrationAddressView --> CustomerController
+OrderPlacementView --> OrderController
+KitchenOrderView --> KitchenController
+ShipperDeliveryView --> DeliveryController
+CatalogManagementView --> CatalogController
+ManagementReportView --> ReportController
+
+CustomerController --> CustomerDA
+CustomerController --> Customer
+CustomerController --> DeliveryAddress
+
+OrderController --> OrderDA
+OrderController --> Order
+OrderController --> CloudKitchenHub
+OrderController --> Voucher
+OrderController --> PaymentTransaction
+
+KitchenController --> KitchenDA
+KitchenController --> Order
+KitchenController --> HubMenuAvailability
+KitchenController --> DeliveryTask
+
+DeliveryController --> DeliveryDA
+DeliveryController --> DeliveryTask
+DeliveryController --> Shipper
+DeliveryController --> CODSettlement
+
+CatalogController --> CatalogDA
+CatalogController --> VirtualBrand
+CatalogController --> MenuItem
+CatalogController --> HubMenuAvailability
+
+ReportController --> ReportDA
+
+Customer <|-- LocalCustomer
+Customer <|-- ForeignTourist
+Order *-- OrderLineItem
+VirtualBrand o-- MenuItem
+@enduml
