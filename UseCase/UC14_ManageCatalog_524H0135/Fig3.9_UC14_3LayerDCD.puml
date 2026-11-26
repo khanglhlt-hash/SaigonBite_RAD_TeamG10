@@ -1,0 +1,71 @@
+@startuml
+title Fig 3.9: UC #14 Three-Layer Design Class Diagram - Manage Brands & Menu Items
+footer Author: Nguyen Phan Anh Tuan (524H0135)
+skinparam classAttributeIconSize 0
+
+class CatalogManagementView <<Boundary>> {
+  +renderCatalogList(brands, items)
+  +showEntityForm(entityDto)
+  +confirmArchiveDialog(entityId)
+  +showValidationErrors(errors)
+}
+
+class CatalogController <<Control>> {
+  +getCatalogOverview() : CatalogDTO
+  +createBrand(brandDto) : VirtualBrand
+  +createMenuItem(itemDto, hubIds) : MenuItem
+  +updateMenuItem(itemId, itemDto) : MenuItem
+  +archiveMenuItem(itemId) : Boolean
+  +archiveBrand(brandId) : Boolean
+  -validateBilingualAndPrice(dto) : Boolean
+}
+
+class VirtualBrand <<Entity>> {
+  -brandId : String
+  -nameVi : String
+  -nameEn : String
+  -descriptionVi : String
+  -descriptionEn : String
+  -isArchived : Boolean
+  +archive()
+}
+
+class MenuItem <<Entity>> {
+  -itemId : String
+  -brandId : String
+  -nameVi : String
+  -nameEn : String
+  -unitPrice : Decimal
+  -category : String
+  -isArchived : Boolean
+  +archive()
+}
+
+class HubMenuAvailability <<Entity>> {
+  -hubId : String
+  -itemId : String
+  -isAvailable : Boolean
+  -dailyStockQty : int
+  +disable()
+}
+
+class CatalogDA <<DataAccess>> {
+  +findAllBrandsAndItems() : CatalogDTO
+  +insertBrand(brand) : String
+  +insertMenuItemWithHubs(item, hubIds) : String
+  +updateMenuItem(item) : Boolean
+  +softArchiveItemAndDisableHubs(itemId) : Boolean
+  +softArchiveBrandCascade(brandId) : Boolean
+}
+
+CatalogManagementView --> CatalogController
+CatalogController --> CatalogDA
+CatalogController --> VirtualBrand
+CatalogController --> MenuItem
+CatalogController --> HubMenuAvailability
+VirtualBrand "1" o-- "1..*" MenuItem
+MenuItem "1" -- "0..*" HubMenuAvailability
+CatalogDA ..> VirtualBrand
+CatalogDA ..> MenuItem
+CatalogDA ..> HubMenuAvailability
+@enduml

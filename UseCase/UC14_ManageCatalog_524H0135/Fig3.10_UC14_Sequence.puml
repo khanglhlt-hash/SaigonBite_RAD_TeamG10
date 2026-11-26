@@ -1,0 +1,33 @@
+@startuml
+title Fig 3.10: UC #14 Multi-Layer Sequence Diagram - Create & Archive Menu Item
+footer Author: Nguyen Phan Anh Tuan (524H0135)
+autonumber
+
+actor "Office Staff / Admin" as Admin
+participant "CatalogManagementView\n<<Boundary>>" as View
+participant "CatalogController\n<<Control>>" as Ctrl
+participant "MenuItem\n<<Entity>>" as Item
+participant "HubMenuAvailability\n<<Entity>>" as Avail
+participant "CatalogDA\n<<DataAccess>>" as DA
+
+== Scenario 1: Create Bilingual Menu Item ==
+Admin -> View : submitNewItem(itemDto, selectedHubIds)
+View -> Ctrl : createMenuItem(itemDto, selectedHubIds)
+Ctrl -> Ctrl : validateBilingualAndPrice(itemDto)
+alt Validation Passed (VI & EN present, price > 0)
+  Ctrl -> Item : new MenuItem(itemDto)
+  Ctrl -> Avail : initHubLinks(selectedHubIds, isAvailable=true)
+  Ctrl -> DA : insertMenuItemWithHubs(item, selectedHubIds)
+  DA --> Ctrl : newItemId
+  Ctrl --> View : showSuccess("Item created", newItemId)
+else Validation Failed
+  Ctrl --> View : showValidationErrors("Missing EN/VI or price <= 0")
+end
+
+== Scenario 2: Soft-Archive Menu Item ==
+Admin -> View : clickArchiveAndConfirm(itemId)
+View -> Ctrl : archiveMenuItem(itemId)
+Ctrl -> DA : softArchiveItemAndDisableHubs(itemId)
+DA --> Ctrl : true
+Ctrl --> View : refreshCatalogList("Item archived safely")
+@enduml
