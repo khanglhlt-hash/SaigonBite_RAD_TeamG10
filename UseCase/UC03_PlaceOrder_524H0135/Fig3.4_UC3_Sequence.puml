@@ -1,0 +1,57 @@
+@startuml
+title Fig 3.4: UC #3 Multi-Layer Sequence Diagram - Place an Order
+footer Author: Nguyen Phan Anh Tuan (524H0135)
+autonumber
+
+actor Customer
+participant "OrderPlacementView\n<<Boundary>>" as View
+participant "OrderController\n<<Control>>" as Ctrl
+participant "CloudKitchenHub\n<<Entity>>" as Hub
+participant "Voucher\n<<Entity>>" as Vch
+participant "Order\n<<Entity>>" as Ord
+participant "OrderDA\n<<DataAccess>>" as DA
+participant "PaymentGateway\n<<External>>" as GW
+
+Customer -> View : clickCheckout(addrId, hubId, cartItems)
+View -> Ctrl : initiateCheckout(custId, addrId, hubId, cartItems)
+Ctrl -> DA : getHubAndActiveCount(hubId)
+DA --> Ctrl : hub
+Ctrl -> Hub : isOverloaded()
+Hub --> Ctrl : isBusy
+
+alt isBusy == true
+  Ctrl -> DA : findNearbyQuietHub(lat, lng)
+  DA --> Ctrl : quietHub
+  Ctrl --> View : showBusyHubAlternative(quietHub, 5% discount)
+else isBusy == false
+  Ctrl -> Ctrl : calculateDeliveryFee(distanceKm)
+  Ctrl --> View : displayCheckoutSummary(summary)
+end
+
+opt Customer enters voucher code
+  Customer -> View : enterVoucher(code)
+  View -> Ctrl : applyVoucher(draft, code)
+  Ctrl -> DA : findVoucherByCode(code)
+  DA --> Ctrl : voucher
+  Ctrl -> Vch : isValid(subtotal, now)
+  Vch --> Ctrl : true
+  Ctrl -> Vch : computeDiscount(subtotal)
+  Vch --> Ctrl : discountAmt
+  Ctrl --> View : updateTotal(discountAmt)
+end
+
+Customer -> View : clickConfirmAndPay(paymentMethod)
+View -> Ctrl : confirmAndPay(custId, draft, paymentMethod)
+Ctrl -> Ctrl : validatePaymentRule(custType, paymentMethod, total)
+
+alt Online Payment
+  Ctrl -> GW : authorizePayment(total, paymentDetails)
+  GW --> Ctrl : authSuccess(txRef)
+end
+
+Ctrl -> Ord : create(status="Placed", lineItems, totals)
+Ctrl -> DA : saveOrderAtomic(order, lineItems, payment, voucherCode)
+DA --> Ctrl : orderId
+Ctrl --> View : showReceipt(orderId, "Placed")
+View --> Customer : Display digital receipt
+@enduml

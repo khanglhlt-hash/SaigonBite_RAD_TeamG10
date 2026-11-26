@@ -1,0 +1,82 @@
+@startuml
+title Fig 3.3: UC #3 Three-Layer Design Class Diagram - Place an Order
+footer Author: Nguyen Phan Anh Tuan (524H0135)
+skinparam classAttributeIconSize 0
+
+class OrderPlacementView <<Boundary>> {
+  +displayCheckoutSummary(summaryDto)
+  +showBusyHubAlternative(hubDto)
+  +showReceipt(orderDto)
+  +showError(msg)
+}
+
+class OrderController <<Control>> {
+  +initiateCheckout(custId, addrId, hubId, items) : CheckoutSummary
+  +applyVoucher(orderDraft, code) : Decimal
+  +confirmAndPay(custId, draftDto, paymentMethod) : OrderReceipt
+  -calculateDeliveryFee(distanceKm) : Decimal
+  -validatePaymentRule(customerType, method, total) : Boolean
+}
+
+class CloudKitchenHub <<Entity>> {
+  -hubId : String
+  -maxActiveOrders : int
+  -currentActiveOrders : int
+  -maxDeliveryRadiusKm : Decimal
+  +isOverloaded() : Boolean
+  +isQuietHub() : Boolean
+}
+
+class Order <<Entity>> {
+  -orderId : String
+  -orderStatus : String
+  -foodSubtotal : Decimal
+  -deliveryFee : Decimal
+  -quietHubDiscount : Decimal
+  -voucherDiscount : Decimal
+  -totalAmount : Decimal
+  +calculateTotal() : Decimal
+}
+
+class OrderLineItem <<Entity>> {
+  -itemId : String
+  -quantity : int
+  -unitPrice : Decimal
+  +getLineSubtotal() : Decimal
+}
+
+class Voucher <<Entity>> {
+  -voucherCode : String
+  -discountValue : Decimal
+  -maxUsage : int
+  -usedCount : int
+  +isValid(subtotal, now) : Boolean
+  +computeDiscount(subtotal) : Decimal
+}
+
+class PaymentTransaction <<Entity>> {
+  -transactionId : String
+  -paymentMethod : String
+  -amount : Decimal
+  -paymentStatus : String
+}
+
+class OrderDA <<DataAccess>> {
+  +getHubAndActiveCount(hubId) : CloudKitchenHub
+  +findNearbyQuietHub(lat, lng) : CloudKitchenHub
+  +findVoucherByCode(code) : Voucher
+  +saveOrderAtomic(order, items, payment, voucherCode) : String
+}
+
+OrderPlacementView --> OrderController
+OrderController --> OrderDA
+OrderController --> CloudKitchenHub
+OrderController --> Order
+OrderController --> Voucher
+OrderController --> PaymentTransaction
+Order *-- OrderLineItem
+OrderDA ..> Order
+OrderDA ..> CloudKitchenHub
+OrderDA ..> Voucher
+OrderDA ..> PaymentTransaction
+@enduml
